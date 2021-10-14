@@ -1,6 +1,6 @@
 import {Fragment, useState} from 'react'
 import {Listbox, Transition} from '@headlessui/react'
-import {CheckIcon, SelectorIcon, ExclamationCircleIcon} from '@heroicons/react/solid'
+import {CheckIcon, SelectorIcon} from '@heroicons/react/solid'
 import WarningPopover from "../components/WarningPopover"
 import {getCurrentUser, getFilesInFolder} from "../lib/box"
 
@@ -14,7 +14,7 @@ const people = [
   {name: 'Hellen Schmidt', email: 'welcometohellen@test.com'},
 ]
 
-export default function Home({name, data } ) {
+export default function Home({name, files}) {
   const [selected, setSelected] = useState(people[0])
   const [emailConfirmed, setEmailConfirmed] = useState()
 
@@ -25,7 +25,6 @@ export default function Home({name, data } ) {
 
   return (
     <div className="bg-gradient-to-b from-blue-200 to-blue-300 min-h-screen">
-      {JSON.stringify(data)}
       <div className="mx-auto max-w-lg">
         <p className="text-lg pt-8">Welcome, <span className="font-semibold">{name}</span></p>
         <p className="text-2xl font-bold">Leading Healthcare Provider</p>
@@ -106,8 +105,16 @@ export default function Home({name, data } ) {
         }
         {emailConfirmed &&
         <div className="flex flex-col mx-auto">
-          <p>Upload forms and send to patient</p>
-          <button className="justify-center my-2 py-2 border border-white rounded-md font-medium bg-red-500 text-white font-bold hover:bg-red-600">
+          <p>Upload {files.total_count} forms and send to patient?</p>
+          {files.entries.map((f) => {
+            return <p>{f.name}</p>
+          })}
+          <button
+            className="justify-center my-2 py-2 border border-white rounded-md font-medium bg-red-500 text-white font-bold hover:bg-red-600"
+            onClick={() => {
+              createAndShareFolder(selected.name)
+              console.log("send")
+            }}>
             share forms
           </button>
         </div>
@@ -117,14 +124,26 @@ export default function Home({name, data } ) {
   )
 }
 
+async function createAndShareFolder(folderName) {
+  const createFolderResponse = await fetch("/api/box", {
+    method: 'POST',
+    body: folderName
+  })
+
+  const { id } = await createFolderResponse.json()
+
+  console.log(id)
+
+}
+
 export async function getStaticProps() {
-  const { name } = await getCurrentUser();
-  const data = await getFilesInFolder();
+  const {name} = await getCurrentUser();
+  const files = await getFilesInFolder();
 
   return {
     props: {
       name,
-      data,
+      files,
     },
   };
 }
