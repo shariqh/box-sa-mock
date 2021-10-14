@@ -111,10 +111,7 @@ export default function Home({name, files}) {
           })}
           <button
             className="justify-center my-2 py-2 border border-white rounded-md font-medium bg-red-500 text-white font-bold hover:bg-red-600"
-            onClick={() => {
-              createAndShareFolder(selected.name)
-              console.log("send")
-            }}>
+            onClick={() => {createAndShareFolder(selected.name, selected.email)}}>
             share forms
           </button>
         </div>
@@ -124,16 +121,22 @@ export default function Home({name, files}) {
   )
 }
 
-async function createAndShareFolder(folderName) {
-  const createFolderResponse = await fetch("/api/box", {
+async function createAndShareFolder(folderName, email) {
+  const createFolderResponse = await fetch("/api/createPatientFolder", {
     method: 'POST',
     body: folderName
   })
 
   const { id } = await createFolderResponse.json()
 
-  console.log(id)
-
+  const createCollab = await fetch('/api/createCollab', {
+    method: 'POST',
+    body: JSON.stringify({
+      itemID: id,
+      email: email,
+      role: "editor"
+    })
+  })
 }
 
 export async function getStaticProps() {
