@@ -1,82 +1,130 @@
-import Head from 'next/head'
+import {Fragment, useState} from 'react'
+import {Listbox, Transition} from '@headlessui/react'
+import {CheckIcon, SelectorIcon, ExclamationCircleIcon} from '@heroicons/react/solid'
+import WarningPopover from "../components/WarningPopover"
+import {getCurrentUser, getFilesInFolder} from "../lib/box"
 
-export default function Home() {
+const people = [
+  {name: 'Wade Cooper', email: 'wadeinwater@test.com'},
+  {name: 'Arlene Mccoy', email: 'whysomccoy@test.com'},
+  {name: 'Shariq Hirani', email: 'shariqhirani2010@gmail.com'},
+  {name: 'Devon Webb', email: 'webbedfeet@test.com'},
+  {name: 'Tom Cook', email: 'notthegreatestcook@test.com'},
+  {name: 'Tanya Fox', email: 'slyasafox@test.com'},
+  {name: 'Hellen Schmidt', email: 'welcometohellen@test.com'},
+]
+
+export default function Home({name, data } ) {
+  const [selected, setSelected] = useState(people[0])
+  const [emailConfirmed, setEmailConfirmed] = useState()
+
+  const newSelect = (selected) => {
+    setSelected(selected)
+    setEmailConfirmed(false)
+  }
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen py-2">
-      <Head>
-        <title>Create Next App</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-
-      <main className="flex flex-col items-center justify-center w-full flex-1 px-20 text-center">
-        <h1 className="text-6xl font-bold">
-          Welcome to{' '}
-          <a className="text-blue-600" href="https://nextjs.org">
-            Next.js!
-          </a>
-        </h1>
-
-        <p className="mt-3 text-2xl">
-          Get started by editing{' '}
-          <code className="p-3 font-mono text-lg bg-gray-100 rounded-md">
-            pages/index.js
-          </code>
-        </p>
-
-        <div className="flex flex-wrap items-center justify-around max-w-4xl mt-6 sm:w-full">
-          <a
-            href="https://nextjs.org/docs"
-            className="p-6 mt-6 text-left border w-96 rounded-xl hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Documentation &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Find in-depth information about Next.js features and API.
-            </p>
-          </a>
-
-          <a
-            href="https://nextjs.org/learn"
-            className="p-6 mt-6 text-left border w-96 rounded-xl hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Learn &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Learn about Next.js in an interactive course with quizzes!
-            </p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className="p-6 mt-6 text-left border w-96 rounded-xl hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Examples &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Discover and deploy boilerplate example Next.js projects.
-            </p>
-          </a>
-
-          <a
-            href="https://vercel.com/import?filter=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className="p-6 mt-6 text-left border w-96 rounded-xl hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Deploy &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
+    <div className="bg-gradient-to-b from-blue-200 to-blue-300 min-h-screen">
+      {JSON.stringify(data)}
+      <div className="mx-auto max-w-lg">
+        <p className="text-lg pt-8">Welcome, <span className="font-semibold">{name}</span></p>
+        <p className="text-2xl font-bold">Leading Healthcare Provider</p>
+        <p className="text-xl font-semibold">Patient Form Portal</p>
+        <p className="pl-2 pt-4">Select patient from EMR</p>
+        <div className="w-full">
+          <Listbox value={selected} onChange={(selected) => {
+            newSelect(selected)
+          }}>
+            <div className="relative mt-1">
+              <Listbox.Button
+                className="relative w-full py-2 pl-3 pr-10 text-left bg-white rounded-lg shadow-md cursor-default focus:outline-none focus-visible:ring-2 focus-visible:ring-opacity-75 focus-visible:ring-white focus-visible:ring-offset-orange-300 focus-visible:ring-offset-2 focus-visible:border-indigo-500 sm:text-sm">
+                <span className="block truncate">{selected.name}</span>
+                <span className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+              <SelectorIcon
+                className="w-5 h-5 text-gray-400"
+                aria-hidden="true"
+              />
+            </span>
+              </Listbox.Button>
+              <Transition
+                as={Fragment}
+                leave="transition ease-in duration-100"
+                leaveFrom="opacity-100"
+                leaveTo="opacity-0"
+              >
+                <Listbox.Options
+                  className="absolute w-full py-1 mt-1 overflow-auto text-base bg-white rounded-md shadow-lg max-h-60 ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+                  {people.map((person, personIdx) => (
+                    <Listbox.Option
+                      key={personIdx}
+                      className={({active}) =>
+                        `${active ? 'hover:bg-blue-200' : 'text-gray-900'}
+                          cursor-default select-none relative py-2 pl-10 pr-4`
+                      }
+                      value={person}
+                    >
+                      {({selected, active}) => (
+                        <>
+                      <span
+                        className={`${
+                          selected ? 'font-medium' : 'font-normal'
+                        } block truncate`}
+                      >
+                        {person.name}
+                      </span>
+                          {selected ? (
+                            <span
+                              className={`${
+                                active ? 'text-amber-600' : 'text-amber-600'
+                              }
+                                absolute inset-y-0 left-0 flex items-center pl-3`}
+                            >
+                          <CheckIcon className="w-5 h-5" aria-hidden="true"/>
+                        </span>
+                          ) : null}
+                        </>
+                      )}
+                    </Listbox.Option>
+                  ))}
+                </Listbox.Options>
+              </Transition>
+            </div>
+          </Listbox>
         </div>
-      </main>
-
-      <footer className="flex items-center justify-center w-full h-24 border-t">
-        <a
-          className="flex items-center justify-center"
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <img src="/vercel.svg" alt="Vercel Logo" className="h-4 ml-2" />
-        </a>
-      </footer>
+        {selected &&
+        <>
+          <p className="pl-2 pt-2">Patient email on file</p>
+          <p className="bg-gray-200 shadow-md uppercase p-2 rounded-lg tracking-wider">{selected.email}</p>
+          <div className="justify-center space-x-4 flex">
+            <button className="my-4 px-3 py-2 border border-black rounded-md font-medium bg-white hover:bg-blue-400"
+                    onClick={() => setEmailConfirmed(true)}>
+              confirm
+            </button>
+            <WarningPopover/>
+          </div>
+        </>
+        }
+        {emailConfirmed &&
+        <div className="flex flex-col mx-auto">
+          <p>Upload forms and send to patient</p>
+          <button className="justify-center my-2 py-2 border border-white rounded-md font-medium bg-red-500 text-white font-bold hover:bg-red-600">
+            share forms
+          </button>
+        </div>
+        }
+      </div>
     </div>
   )
+}
+
+export async function getStaticProps() {
+  const { name } = await getCurrentUser();
+  const data = await getFilesInFolder();
+
+  return {
+    props: {
+      name,
+      data,
+    },
+  };
 }
